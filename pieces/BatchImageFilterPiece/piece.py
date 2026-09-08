@@ -18,10 +18,10 @@ class BatchImageFilterPiece(BasePiece):
 
         input_count = len(input_data.input_images)
         max_workers = min(input_data.max_concurrency, input_count)
-        self.logger.info(f"Filtering {input_count} images with up to {max_workers} concurrent workers.")
-        self.logger.info(f"input_images type: {type(input_data.input_images).__name__}")
+        self._debug(f"Filtering {input_count} images with up to {max_workers} concurrent workers.")
+        self._debug(f"input_images type: {type(input_data.input_images).__name__}")
         for index, image_input in enumerate(input_data.input_images):
-            self.logger.info(
+            self._debug(
                 f"Image {index} input summary: {self._summarize_image_input(image_input)}"
             )
 
@@ -47,9 +47,9 @@ class BatchImageFilterPiece(BasePiece):
                 image_base64_strings[result_index] = base64_string
                 image_file_paths[result_index] = file_path
                 if error:
-                    self.logger.error(f"Image {result_index} failed at stage '{error}'.")
+                    self._debug(f"Image {result_index} failed at stage '{error}'.", error=True)
                 else:
-                    self.logger.info(f"Image {result_index} filtered successfully.")
+                    self._debug(f"Image {result_index} filtered successfully.")
 
         if len(image_base64_strings) != input_count or len(image_file_paths) != input_count:
             raise RuntimeError(f"Expected {input_count} outputs for each output list.")
@@ -59,7 +59,7 @@ class BatchImageFilterPiece(BasePiece):
             for base64_string, file_path in zip(image_base64_strings, image_file_paths)
         )
         failed_count = input_count - successful_count
-        self.logger.info(
+        self._debug(
             f"Completed {input_count} images: {successful_count} succeeded, {failed_count} failed."
         )
 
@@ -83,33 +83,41 @@ class BatchImageFilterPiece(BasePiece):
             return index, None, None, "input_is_null"
 
         try:
-            self.logger.info(f"Image {index}: loading input.")
+            self._debug(f"Image {index}: loading input.")
             image = self._load_image(image_input)
-            self.logger.info(f"Image {index}: loaded {image.width}x{image.height} image.")
-            self.logger.info(f"Image {index}: applying filters.")
+            self._debug(f"Image {index}: loaded {image.width}x{image.height} image.")
+            self._debug(f"Image {index}: applying filters.")
             image = self._apply_filters(image, input_data)
             output_buffer = BytesIO()
-            self.logger.info(f"Image {index}: encoding PNG output.")
+            self._debug(f"Image {index}: encoding PNG output.")
             image.save(output_buffer, format="PNG")
             image_bytes = output_buffer.getvalue()
         except Exception as exc:
-            self.logger.error(f"Image {index}: processing error type {type(exc).__name__}.")
+            self._debug(f"Image {index}: processing error type {type(exc).__name__}.", error=True)
             return index, None, None, type(exc).__name__
 
         image_base64_string = None
         image_file_path = None
 
         if input_data.output_type in (OutputTypeEnum.base64_string, OutputTypeEnum.both):
-            self.logger.info(f"Image {index}: writing base64 output.")
+            self._debug(f"Image {index}: writing base64 output.")
             image_base64_string = base64.b64encode(image_bytes).decode("utf-8")
 
         if input_data.output_type in (OutputTypeEnum.file, OutputTypeEnum.both):
             image_file_path = str(Path(self.results_path) / f"filtered_{index}.png")
-            self.logger.info(f"Image {index}: writing file output.")
+            self._debug(f"Image {index}: writing file output.")
             with open(image_file_path, "wb") as output_file:
                 output_file.write(image_bytes)
 
         return index, image_base64_string, image_file_path, None
+
+    def _debug(self, message: str, error: bool = False) -> None:
+        full_message = f"[BatchImageFilterPiece] {message}"
+        print(full_message, flush=True)
+        if error:
+            self.logger.error(full_message)
+        else:
+            self.logger.info(full_message)
 
     def _load_image(self, image_input: str) -> Image.Image:
         base64_value = image_input
