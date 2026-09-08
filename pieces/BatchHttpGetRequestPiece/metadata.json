@@ -1,6 +1,6 @@
 {
-    "name": "BatchHttpRequestPiece",
-    "description": "Fetch multiple URLs concurrently and return base64 encoded response bodies.",
+    "name": "BatchHttpGetRequestPiece",
+    "description": "Fetch multiple URLs with HTTP GET concurrently and return response files plus base64 encoded response bodies.",
     "dependency": {
         "dockerfile": "Dockerfile_1"
     },
@@ -20,7 +20,7 @@
         "Image"
     ],
     "style": {
-        "node_label": "Batch HTTP Request",
+        "node_label": "Batch HTTP GET Request",
         "icon_class_name": "fa-solid:cloud-arrow-down"
     }
 }

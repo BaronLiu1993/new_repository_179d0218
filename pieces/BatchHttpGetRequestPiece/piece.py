@@ -10,7 +10,7 @@ from domino.base_piece import BasePiece
 from .models import InputModel, OutputModel, RequestConfig
 
 
-class BatchHttpRequestPiece(BasePiece):
+class BatchHttpGetRequestPiece(BasePiece):
 
     def piece_function(self, input_data: InputModel):
         if not input_data.requests:
@@ -99,19 +99,12 @@ class BatchHttpRequestPiece(BasePiece):
         if request_config.bearer_token:
             headers["Authorization"] = f"Bearer {request_config.bearer_token}"
 
-        json_body = None
-        if request_config.body_json_data:
-            try:
-                json_body = json.loads(request_config.body_json_data)
-            except json.JSONDecodeError as exc:
-                return index, None, None, None, f"Invalid JSON body: {exc}"
-
         try:
             response = requests.request(
-                method=request_config.method.value,
+                method="GET",
                 url=request_config.url,
                 headers=headers,
-                json=json_body,
+                json=None,
                 timeout=timeout_seconds,
             )
             response.raise_for_status()
@@ -125,12 +118,10 @@ class BatchHttpRequestPiece(BasePiece):
             response_file.write(response.content)
         return index, encoded_body, response_file_path, response.status_code, None
 
-    def _request_key(self, request_config: RequestConfig) -> Tuple[str, str, str, str]:
+    def _request_key(self, request_config: RequestConfig) -> Tuple[str, str]:
         return (
             request_config.url,
-            request_config.method.value,
             request_config.bearer_token or "",
-            request_config.body_json_data or "",
         )
 
     def _set_display_result(self, request_count: int, successful_count: int, failed_count: int):

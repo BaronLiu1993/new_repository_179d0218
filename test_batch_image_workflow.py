@@ -8,8 +8,8 @@ from PIL import Image
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from pieces.BatchHttpRequestPiece.models import InputModel as HttpInputModel
-from pieces.BatchHttpRequestPiece.piece import BatchHttpRequestPiece
+from pieces.BatchHttpGetRequestPiece.models import InputModel as HttpInputModel
+from pieces.BatchHttpGetRequestPiece.piece import BatchHttpGetRequestPiece
 from pieces.BatchImageFilterPiece.models import InputModel as ImageFilterInputModel
 from pieces.BatchImageFilterPiece.piece import BatchImageFilterPiece
 
@@ -22,7 +22,7 @@ def _png_bytes(color):
 
 
 def test_batch_http_file_outputs_feed_batch_image_filter(tmp_path):
-    http_piece = BatchHttpRequestPiece(DeployModeType.dry_run, "http_task", "test_dag")
+    http_piece = BatchHttpGetRequestPiece(DeployModeType.dry_run, "http_task", "test_dag")
     http_piece.results_path = str(tmp_path / "http")
     Path(http_piece.results_path).mkdir()
 
@@ -43,7 +43,7 @@ def test_batch_http_file_outputs_feed_batch_image_filter(tmp_path):
         response.raise_for_status.return_value = None
         return response
 
-    with patch("pieces.BatchHttpRequestPiece.piece.requests.request", side_effect=fake_request):
+    with patch("pieces.BatchHttpGetRequestPiece.piece.requests.request", side_effect=fake_request):
         http_output = http_piece.piece_function(
             HttpInputModel(
                 requests=[

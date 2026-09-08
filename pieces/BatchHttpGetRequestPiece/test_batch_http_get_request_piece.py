@@ -10,8 +10,8 @@ from pydantic import ValidationError
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
-from pieces.BatchHttpRequestPiece.models import InputModel
-from pieces.BatchHttpRequestPiece.piece import BatchHttpRequestPiece
+from pieces.BatchHttpGetRequestPiece.models import InputModel
+from pieces.BatchHttpGetRequestPiece.piece import BatchHttpGetRequestPiece
 
 
 def test_rejects_invalid_max_concurrency():
@@ -20,7 +20,7 @@ def test_rejects_invalid_max_concurrency():
 
 
 def test_processes_one_valid_request(tmp_path):
-    piece = BatchHttpRequestPiece(DeployModeType.dry_run, "test_task", "test_dag")
+    piece = BatchHttpGetRequestPiece(DeployModeType.dry_run, "test_task", "test_dag")
     piece.results_path = str(tmp_path)
 
     response = Mock()
@@ -32,7 +32,6 @@ def test_processes_one_valid_request(tmp_path):
         requests=[
             {
                 "url": "https://example.com/a.png",
-                "method": "GET",
                 "bearer_token": "token-a",
             },
         ],
@@ -40,7 +39,7 @@ def test_processes_one_valid_request(tmp_path):
         max_concurrency=8,
     )
 
-    with patch("pieces.BatchHttpRequestPiece.piece.requests.request", return_value=response) as request_mock:
+    with patch("pieces.BatchHttpGetRequestPiece.piece.requests.request", return_value=response) as request_mock:
         output = piece.piece_function(input_data)
 
     assert output.requested_count == 1
@@ -61,7 +60,7 @@ def test_processes_one_valid_request(tmp_path):
 
 
 def test_processes_multiple_valid_requests(tmp_path):
-    piece = BatchHttpRequestPiece(DeployModeType.dry_run, "test_task", "test_dag")
+    piece = BatchHttpGetRequestPiece(DeployModeType.dry_run, "test_task", "test_dag")
     piece.results_path = str(tmp_path)
 
     responses_by_url = {}
@@ -77,20 +76,20 @@ def test_processes_multiple_valid_requests(tmp_path):
 
     input_data = InputModel(
         requests=[
-            {"url": "https://example.com/0.png", "method": "GET"},
+            {
+                "url": "https://example.com/0.png",
+            },
             {
                 "url": "https://example.com/1.png",
-                "method": "POST",
                 "bearer_token": "token-b",
-                "body_json_data": '{"size": "large"}',
             },
-            {"url": "https://example.com/2.png", "method": "GET"},
+            {"url": "https://example.com/2.png"},
         ],
         timeout_seconds=10,
         max_concurrency=8,
     )
 
-    with patch("pieces.BatchHttpRequestPiece.piece.requests.request", side_effect=fake_request) as request_mock:
+    with patch("pieces.BatchHttpGetRequestPiece.piece.requests.request", side_effect=fake_request) as request_mock:
         output = piece.piece_function(input_data)
 
     assert output.requested_count == 3
@@ -108,10 +107,11 @@ def test_processes_multiple_valid_requests(tmp_path):
         b"image-c",
     ]
     assert request_mock.call_count == 3
-    post_call = next(call for call in request_mock.call_args_list if call.kwargs["method"] == "POST")
-    assert post_call.kwargs["headers"] == {"Authorization": "Bearer token-b"}
-    assert post_call.kwargs["json"] == {"size": "large"}
-    assert post_call.kwargs["timeout"] == 10
+    assert all(call.kwargs["method"] == "GET" for call in request_mock.call_args_list)
+    token_call = next(call for call in request_mock.call_args_list if call.kwargs["url"] == "https://example.com/1.png")
+    assert token_call.kwargs["headers"] == {"Authorization": "Bearer token-b"}
+    assert token_call.kwargs["json"] is None
+    assert token_call.kwargs["timeout"] == 10
 
     summary = json.loads(Path(piece.display_result["file_path"]).read_text())
     assert summary == {
@@ -122,7 +122,7 @@ def test_processes_multiple_valid_requests(tmp_path):
 
 
 def test_dedupes_duplicate_requests(tmp_path):
-    piece = BatchHttpRequestPiece(DeployModeType.dry_run, "test_task", "test_dag")
+    piece = BatchHttpGetRequestPiece(DeployModeType.dry_run, "test_task", "test_dag")
     piece.results_path = str(tmp_path)
 
     responses_by_url = {}
@@ -141,14 +141,14 @@ def test_dedupes_duplicate_requests(tmp_path):
 
     input_data = InputModel(
         requests=[
-            {"url": "https://example.com/a.png", "method": "GET"},
-            {"url": "https://example.com/b.png", "method": "GET"},
-            {"url": "https://example.com/a.png", "method": "GET"},
+            {"url": "https://example.com/a.png"},
+            {"url": "https://example.com/b.png"},
+            {"url": "https://example.com/a.png"},
         ],
         max_concurrency=8,
     )
 
-    with patch("pieces.BatchHttpRequestPiece.piece.requests.request", side_effect=fake_request) as request_mock:
+    with patch("pieces.BatchHttpGetRequestPiece.piece.requests.request", side_effect=fake_request) as request_mock:
         output = piece.piece_function(input_data)
 
     assert request_mock.call_count == 2
@@ -161,7 +161,7 @@ def test_dedupes_duplicate_requests(tmp_path):
 
 
 def test_preserves_one_output_slot_per_request(tmp_path):
-    piece = BatchHttpRequestPiece(DeployModeType.dry_run, "test_task", "test_dag")
+    piece = BatchHttpGetRequestPiece(DeployModeType.dry_run, "test_task", "test_dag")
     piece.results_path = str(tmp_path)
 
     response_ok = Mock()
@@ -191,7 +191,7 @@ def test_preserves_one_output_slot_per_request(tmp_path):
         max_concurrency=8,
     )
 
-    with patch("pieces.BatchHttpRequestPiece.piece.requests.request", side_effect=fake_request):
+    with patch("pieces.BatchHttpGetRequestPiece.piece.requests.request", side_effect=fake_request):
         output = piece.piece_function(input_data)
 
     assert output.requested_count == 2

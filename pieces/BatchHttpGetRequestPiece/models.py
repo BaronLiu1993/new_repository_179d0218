@@ -1,12 +1,6 @@
-from enum import Enum
 from typing import List, Optional
 
 from pydantic import BaseModel, Field, conint
-
-
-class MethodEnum(str, Enum):
-    GET = "GET"
-    POST = "POST"
 
 
 class RequestConfig(BaseModel):
@@ -14,33 +8,21 @@ class RequestConfig(BaseModel):
         description="URL to request.",
         json_schema_extra={"from_upstream": "never"},
     )
-    method: MethodEnum = Field(
-        default=MethodEnum.GET,
-        description="HTTP method for this request.",
-    )
     bearer_token: Optional[str] = Field(
         default=None,
         description="Optional bearer token for this request.",
         json_schema_extra={"from_upstream": "never"},
     )
-    body_json_data: Optional[str] = Field(
-        default=None,
-        description="Optional JSON body for this request.",
-        json_schema_extra={
-            "widget": "codeeditor-json",
-            "from_upstream": "never",
-        },
-    )
 
 
 class InputModel(BaseModel):
     """
-    Batch HTTP Request Piece Input Model
+    Batch HTTP GET Request Piece Input Model
     """
 
     requests: List[RequestConfig] = Field(
         default=[],
-        description="Requests to execute.",
+        description="GET requests to execute.",
         json_schema_extra={"from_upstream": "never"},
     )
     timeout_seconds: int = Field(
@@ -55,7 +37,7 @@ class InputModel(BaseModel):
 
 class OutputModel(BaseModel):
     """
-    Batch HTTP Request Piece Output Model
+    Batch HTTP GET Request Piece Output Model
     """
 
     base64_bytes_data_list: List[Optional[str]] = Field(
