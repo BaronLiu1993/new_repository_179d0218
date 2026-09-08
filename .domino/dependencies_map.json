@@ -8,7 +8,6 @@
             "BatchImageFilterPiece",
             "BatchHttpRequestPiece"
         ],
-        "secrets": [],
-        "source_image": "ghcr.io/baronliu1993/new_repository_179d0218:0.1.1-group0"
+        "secrets": []
     }
 }

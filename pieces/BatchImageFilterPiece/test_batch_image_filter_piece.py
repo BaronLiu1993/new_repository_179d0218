@@ -49,3 +49,36 @@ def test_preserves_one_output_slot_per_input(tmp_path):
     assert piece.display_result["file_type"] == "html"
     assert Path(piece.display_result["file_path"]).exists()
     assert "Filtered image 0" in Path(piece.display_result["file_path"]).read_text()
+
+
+def test_processes_multiple_valid_images(tmp_path):
+    encoded_images = []
+    for color in [(100, 150, 200), (200, 150, 100), (50, 75, 125)]:
+        image = Image.new("RGB", (4, 4), color=color)
+        buffer = BytesIO()
+        image.save(buffer, format="PNG")
+        encoded_images.append(base64.b64encode(buffer.getvalue()).decode("utf-8"))
+
+    piece = BatchImageFilterPiece(DeployModeType.dry_run, "test_task", "test_dag")
+    piece.results_path = str(tmp_path)
+
+    output = piece.piece_function(
+        InputModel(
+            input_images=encoded_images,
+            sepia=True,
+            output_type="both",
+            max_concurrency=8,
+        )
+    )
+
+    assert output.input_count == 3
+    assert output.successful_count == 3
+    assert output.failed_count == 0
+    assert len(output.image_base64_strings) == 3
+    assert len(output.image_file_paths) == 3
+    assert all(image_base64_string is not None for image_base64_string in output.image_base64_strings)
+    assert all(Path(image_file_path).exists() for image_file_path in output.image_file_paths)
+    display_html = Path(piece.display_result["file_path"]).read_text()
+    assert "Filtered image 0" in display_html
+    assert "Filtered image 1" in display_html
+    assert "Filtered image 2" in display_html

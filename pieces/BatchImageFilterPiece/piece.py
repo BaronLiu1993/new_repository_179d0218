@@ -19,6 +19,11 @@ class BatchImageFilterPiece(BasePiece):
         input_count = len(input_data.input_images)
         max_workers = min(input_data.max_concurrency, input_count)
         self.logger.info(f"Filtering {input_count} images with up to {max_workers} concurrent workers.")
+        self.logger.info(f"input_images type: {type(input_data.input_images).__name__}")
+        for index, image_input in enumerate(input_data.input_images):
+            self.logger.info(
+                f"Image {index} input summary: {self._summarize_image_input(image_input)}"
+            )
 
         image_base64_strings = [None] * input_count
         image_file_paths = [None] * input_count
@@ -42,7 +47,7 @@ class BatchImageFilterPiece(BasePiece):
                 image_base64_strings[result_index] = base64_string
                 image_file_paths[result_index] = file_path
                 if error:
-                    self.logger.error(f"Image {result_index} failed.")
+                    self.logger.error(f"Image {result_index} failed at stage '{error}'.")
                 else:
                     self.logger.info(f"Image {result_index} filtered successfully.")
 
@@ -75,25 +80,32 @@ class BatchImageFilterPiece(BasePiece):
         input_data: InputModel,
     ) -> Tuple[int, Optional[str], Optional[str], Optional[str]]:
         if image_input is None:
-            return index, None, None, "Input image is null."
+            return index, None, None, "input_is_null"
 
         try:
+            self.logger.info(f"Image {index}: loading input.")
             image = self._load_image(image_input)
+            self.logger.info(f"Image {index}: loaded {image.width}x{image.height} image.")
+            self.logger.info(f"Image {index}: applying filters.")
             image = self._apply_filters(image, input_data)
             output_buffer = BytesIO()
+            self.logger.info(f"Image {index}: encoding PNG output.")
             image.save(output_buffer, format="PNG")
             image_bytes = output_buffer.getvalue()
         except Exception as exc:
-            return index, None, None, str(exc)
+            self.logger.error(f"Image {index}: processing error type {type(exc).__name__}.")
+            return index, None, None, type(exc).__name__
 
         image_base64_string = None
         image_file_path = None
 
         if input_data.output_type in (OutputTypeEnum.base64_string, OutputTypeEnum.both):
+            self.logger.info(f"Image {index}: writing base64 output.")
             image_base64_string = base64.b64encode(image_bytes).decode("utf-8")
 
         if input_data.output_type in (OutputTypeEnum.file, OutputTypeEnum.both):
             image_file_path = str(Path(self.results_path) / f"filtered_{index}.png")
+            self.logger.info(f"Image {index}: writing file output.")
             with open(image_file_path, "wb") as output_file:
                 output_file.write(image_bytes)
 
@@ -114,6 +126,17 @@ class BatchImageFilterPiece(BasePiece):
 
         image_bytes = base64.b64decode(base64_value, validate=True)
         return Image.open(BytesIO(image_bytes)).convert("RGB")
+
+    def _summarize_image_input(self, image_input: Optional[str]) -> str:
+        if image_input is None:
+            return "null"
+        if not isinstance(image_input, str):
+            return f"type={type(image_input).__name__}"
+        if image_input.startswith("data:"):
+            return f"data-url length={len(image_input)}"
+        if len(image_input) < 1024:
+            return f"short-string length={len(image_input)} value-prefix={image_input[:80]}"
+        return f"long-string length={len(image_input)} prefix={image_input[:24]}"
 
     def _apply_filters(self, image: Image.Image, input_data: InputModel) -> Image.Image:
         if input_data.black_and_white:

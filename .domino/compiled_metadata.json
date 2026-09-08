@@ -203,7 +203,7 @@
             "type": "object"
         },
         "secrets_schema": null,
-        "source_url": "https://github.com/BaronLiu1993/new_repository_179d0218/tree/main/pieces/BatchImageFilterPiece"
+        "source_url": null
     },
     "BatchHttpRequestPiece": {
         "name": "BatchHttpRequestPiece",
@@ -376,6 +376,6 @@
             "type": "object"
         },
         "secrets_schema": null,
-        "source_url": "https://github.com/BaronLiu1993/new_repository_179d0218/tree/main/pieces/BatchHttpRequestPiece"
+        "source_url": null
     }
 }
