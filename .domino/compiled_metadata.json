@@ -1,0 +1,522 @@
+{
+    "BatchImageFilterPiece": {
+        "name": "BatchImageFilterPiece",
+        "dependency": {
+            "dockerfile": "Dockerfile_1",
+            "requirements_file": null
+        },
+        "tags": [
+            "Image",
+            "Batch"
+        ],
+        "style": {
+            "node_label": "Batch Image Filter",
+            "node_type": "default",
+            "node_style": {
+                "backgroundColor": "#ebebeb"
+            },
+            "useIcon": true,
+            "icon_class_name": "fa-solid:image",
+            "iconStyle": {
+                "cursor": "pointer"
+            }
+        },
+        "description": "Apply image filters to multiple base64 encoded images or image file paths.",
+        "container_resources": {
+            "requests": {
+                "cpu": 100,
+                "memory": 128
+            },
+            "limits": {
+                "cpu": 500,
+                "memory": 512
+            }
+        },
+        "input_schema": {
+            "$defs": {
+                "OutputTypeEnum": {
+                    "enum": [
+                        "file",
+                        "base64_string",
+                        "both"
+                    ],
+                    "title": "OutputTypeEnum",
+                    "type": "string"
+                }
+            },
+            "description": "Batch Image Filter Piece Input Model",
+            "properties": {
+                "input_images": {
+                    "default": [],
+                    "description": "Input images. Each item should be either a path to a file, a base64 encoded string, or null.",
+                    "from_upstream": "allowed",
+                    "items": {
+                        "anyOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ]
+                    },
+                    "title": "Input Images",
+                    "type": "array"
+                },
+                "sepia": {
+                    "default": false,
+                    "description": "Apply sepia effect.",
+                    "title": "Sepia",
+                    "type": "boolean"
+                },
+                "black_and_white": {
+                    "default": false,
+                    "description": "Apply black and white effect.",
+                    "title": "Black And White",
+                    "type": "boolean"
+                },
+                "brightness": {
+                    "default": false,
+                    "description": "Apply brightness effect.",
+                    "title": "Brightness",
+                    "type": "boolean"
+                },
+                "darkness": {
+                    "default": false,
+                    "description": "Apply darkness effect.",
+                    "title": "Darkness",
+                    "type": "boolean"
+                },
+                "contrast": {
+                    "default": false,
+                    "description": "Apply contrast effect.",
+                    "title": "Contrast",
+                    "type": "boolean"
+                },
+                "red": {
+                    "default": false,
+                    "description": "Apply red effect.",
+                    "title": "Red",
+                    "type": "boolean"
+                },
+                "green": {
+                    "default": false,
+                    "description": "Apply green effect.",
+                    "title": "Green",
+                    "type": "boolean"
+                },
+                "blue": {
+                    "default": false,
+                    "description": "Apply blue effect.",
+                    "title": "Blue",
+                    "type": "boolean"
+                },
+                "cool": {
+                    "default": false,
+                    "description": "Apply cool effect.",
+                    "title": "Cool",
+                    "type": "boolean"
+                },
+                "warm": {
+                    "default": false,
+                    "description": "Apply warm effect.",
+                    "title": "Warm",
+                    "type": "boolean"
+                },
+                "output_type": {
+                    "allOf": [
+                        {
+                            "$ref": "#/$defs/OutputTypeEnum"
+                        }
+                    ],
+                    "default": "both",
+                    "description": "Format of each output image."
+                },
+                "max_concurrency": {
+                    "default": 8,
+                    "description": "Maximum number of images to process concurrently.",
+                    "minimum": 1,
+                    "title": "Max Concurrency",
+                    "type": "integer"
+                }
+            },
+            "title": "InputModel",
+            "type": "object"
+        },
+        "output_schema": {
+            "description": "Batch Image Filter Piece Output Model",
+            "properties": {
+                "image_base64_strings": {
+                    "description": "Base64 encoded strings of output images. Length always matches input_images.",
+                    "items": {
+                        "anyOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ]
+                    },
+                    "title": "Image Base64 Strings",
+                    "type": "array"
+                },
+                "image_file_paths": {
+                    "description": "Paths to output image files. Length always matches input_images.",
+                    "items": {
+                        "anyOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ]
+                    },
+                    "title": "Image File Paths",
+                    "type": "array"
+                },
+                "input_count": {
+                    "description": "Number of input images provided.",
+                    "title": "Input Count",
+                    "type": "integer"
+                },
+                "successful_count": {
+                    "description": "Number of successfully processed images.",
+                    "title": "Successful Count",
+                    "type": "integer"
+                },
+                "failed_count": {
+                    "description": "Number of failed images.",
+                    "title": "Failed Count",
+                    "type": "integer"
+                }
+            },
+            "required": [
+                "image_base64_strings",
+                "image_file_paths",
+                "input_count",
+                "successful_count",
+                "failed_count"
+            ],
+            "title": "OutputModel",
+            "type": "object"
+        },
+        "secrets_schema": null,
+        "source_url": "https://github.com/BaronLiu1993/test/tree/main/pieces/BatchImageFilterPiece"
+    },
+    "ExampleSleepPiece": {
+        "name": "ExampleSleepPiece",
+        "dependency": {
+            "dockerfile": "Dockerfile_1",
+            "requirements_file": null
+        },
+        "tags": [
+            "Example"
+        ],
+        "style": {
+            "node_label": "Example Sleep Piece",
+            "node_type": "default",
+            "node_style": {
+                "backgroundColor": "#ebebeb"
+            },
+            "useIcon": true,
+            "icon_class_name": "fa-solid:database",
+            "iconStyle": {
+                "cursor": "pointer"
+            }
+        },
+        "description": "This is an example of a simple Domino Piece that sleep for N seconds",
+        "container_resources": {
+            "requests": {
+                "cpu": 100,
+                "memory": 128
+            },
+            "limits": {
+                "cpu": 500,
+                "memory": 512
+            }
+        },
+        "input_schema": {
+            "description": "Sleep Piece Input Model",
+            "properties": {
+                "sleep_time": {
+                    "default": 1,
+                    "description": "Number of seconds to sleep",
+                    "title": "Sleep Time",
+                    "type": "number"
+                }
+            },
+            "title": "InputModel",
+            "type": "object"
+        },
+        "output_schema": {
+            "description": "Sleep Piece Output Model",
+            "properties": {
+                "message": {
+                    "description": "Sleep piece executed",
+                    "title": "Message",
+                    "type": "string"
+                }
+            },
+            "required": [
+                "message"
+            ],
+            "title": "OutputModel",
+            "type": "object"
+        },
+        "secrets_schema": null,
+        "source_url": "https://github.com/BaronLiu1993/test/tree/main/pieces/ExampleSleepPiece"
+    },
+    "ExampleSineWavePiece": {
+        "name": "ExampleSineWavePiece",
+        "dependency": {
+            "dockerfile": "Dockerfile_1",
+            "requirements_file": null
+        },
+        "tags": [
+            "Example"
+        ],
+        "style": {
+            "node_label": "Example Sine Piece",
+            "node_type": "default",
+            "node_style": {
+                "backgroundColor": "#ebebeb"
+            },
+            "useIcon": true,
+            "icon_class_name": "fa-solid:database",
+            "iconStyle": {
+                "cursor": "pointer"
+            }
+        },
+        "description": "This is an example of a piece that uses Dockerfile for dependencies.",
+        "container_resources": {
+            "requests": {
+                "cpu": 100,
+                "memory": 128
+            },
+            "limits": {
+                "cpu": 500,
+                "memory": 512
+            }
+        },
+        "input_schema": {
+            "description": "Sleep Piece Input Model",
+            "properties": {
+                "frequency": {
+                    "default": 5,
+                    "description": "Frequency of the sine wave in Hz",
+                    "title": "Frequency",
+                    "type": "integer"
+                },
+                "duration": {
+                    "default": 1,
+                    "description": "Duration of the sine wave signal in seconds",
+                    "title": "Duration",
+                    "type": "integer"
+                },
+                "sample_rate": {
+                    "default": 1000,
+                    "description": "Sample rate of the sine wave signal.",
+                    "title": "Sample Rate",
+                    "type": "integer"
+                }
+            },
+            "title": "InputModel",
+            "type": "object"
+        },
+        "output_schema": {
+            "description": "Sleep Piece Output Model",
+            "properties": {
+                "message": {
+                    "description": "Sleep piece executed",
+                    "title": "Message",
+                    "type": "string"
+                }
+            },
+            "required": [
+                "message"
+            ],
+            "title": "OutputModel",
+            "type": "object"
+        },
+        "secrets_schema": null,
+        "source_url": "https://github.com/BaronLiu1993/test/tree/main/pieces/ExampleSineWavePiece"
+    },
+    "BatchHttpRequestPiece": {
+        "name": "BatchHttpRequestPiece",
+        "dependency": {
+            "dockerfile": "Dockerfile_1",
+            "requirements_file": null
+        },
+        "tags": [
+            "HTTP",
+            "Batch",
+            "Image"
+        ],
+        "style": {
+            "node_label": "Batch HTTP Request",
+            "node_type": "default",
+            "node_style": {
+                "backgroundColor": "#ebebeb"
+            },
+            "useIcon": true,
+            "icon_class_name": "fa-solid:cloud-arrow-down",
+            "iconStyle": {
+                "cursor": "pointer"
+            }
+        },
+        "description": "Fetch multiple URLs concurrently and return base64 encoded response bodies.",
+        "container_resources": {
+            "requests": {
+                "cpu": 100,
+                "memory": 128
+            },
+            "limits": {
+                "cpu": 500,
+                "memory": 512
+            }
+        },
+        "input_schema": {
+            "$defs": {
+                "MethodEnum": {
+                    "enum": [
+                        "GET",
+                        "POST",
+                        "PUT",
+                        "PATCH",
+                        "DELETE"
+                    ],
+                    "title": "MethodEnum",
+                    "type": "string"
+                },
+                "RequestConfig": {
+                    "properties": {
+                        "url": {
+                            "description": "URL to request.",
+                            "from_upstream": "never",
+                            "title": "Url",
+                            "type": "string"
+                        },
+                        "method": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/$defs/MethodEnum"
+                                }
+                            ],
+                            "default": "GET",
+                            "description": "HTTP method for this request."
+                        },
+                        "bearer_token": {
+                            "anyOf": [
+                                {
+                                    "type": "string"
+                                },
+                                {
+                                    "type": "null"
+                                }
+                            ],
+                            "default": null,
+                            "description": "Optional bearer token for this request.",
+                            "from_upstream": "never",
+                            "title": "Bearer Token"
+                        },
+                        "body_json_data": {
+                            "anyOf": [
+                                {
+                                    "type": "string"
+                                },
+                                {
+                                    "type": "null"
+                                }
+                            ],
+                            "default": null,
+                            "description": "Optional JSON body for this request.",
+                            "from_upstream": "never",
+                            "title": "Body Json Data",
+                            "widget": "codeeditor-json"
+                        }
+                    },
+                    "required": [
+                        "url"
+                    ],
+                    "title": "RequestConfig",
+                    "type": "object"
+                }
+            },
+            "description": "Batch HTTP Request Piece Input Model",
+            "properties": {
+                "requests": {
+                    "default": [],
+                    "description": "Requests to execute.",
+                    "from_upstream": "never",
+                    "items": {
+                        "$ref": "#/$defs/RequestConfig"
+                    },
+                    "title": "Requests",
+                    "type": "array"
+                },
+                "timeout_seconds": {
+                    "default": 10,
+                    "description": "Request timeout in seconds.",
+                    "title": "Timeout Seconds",
+                    "type": "integer"
+                },
+                "max_concurrency": {
+                    "default": 8,
+                    "description": "Maximum number of concurrent requests.",
+                    "minimum": 1,
+                    "title": "Max Concurrency",
+                    "type": "integer"
+                }
+            },
+            "title": "InputModel",
+            "type": "object"
+        },
+        "output_schema": {
+            "description": "Batch HTTP Request Piece Output Model",
+            "properties": {
+                "base64_bytes_data_list": {
+                    "description": "Base64 encoded response bodies. Length always matches the number of input requests.",
+                    "items": {
+                        "anyOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ]
+                    },
+                    "title": "Base64 Bytes Data List",
+                    "type": "array"
+                },
+                "requested_count": {
+                    "description": "Number of requests provided.",
+                    "title": "Requested Count",
+                    "type": "integer"
+                },
+                "successful_count": {
+                    "description": "Number of successful requests.",
+                    "title": "Successful Count",
+                    "type": "integer"
+                },
+                "failed_count": {
+                    "description": "Number of failed requests.",
+                    "title": "Failed Count",
+                    "type": "integer"
+                }
+            },
+            "required": [
+                "base64_bytes_data_list",
+                "requested_count",
+                "successful_count",
+                "failed_count"
+            ],
+            "title": "OutputModel",
+            "type": "object"
+        },
+        "secrets_schema": null,
+        "source_url": "https://github.com/BaronLiu1993/test/tree/main/pieces/BatchHttpRequestPiece"
+    }
+}

@@ -1,0 +1,11 @@
+FROM --platform=linux/amd64 ghcr.io/tauffer-consulting/domino-base-piece:latest
+# Install system dependencies.
+RUN apt-get update
+
+# Need to copy pieces source code
+COPY config.toml domino/pieces_repository/
+COPY pieces domino/pieces_repository/pieces
+COPY .domino domino/pieces_repository/.domino
+
+# Install specific dependencies in domino_env virtual environment
+RUN pip install --no-cache-dir numpy==1.23.5 plotly==5.18.0 requests==2.31.0 Pillow==10.2.0

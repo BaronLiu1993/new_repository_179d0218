@@ -1,0 +1,26 @@
+{
+    "name": "BatchHttpRequestPiece",
+    "description": "Fetch multiple URLs concurrently and return base64 encoded response bodies.",
+    "dependency": {
+        "dockerfile": "Dockerfile_1"
+    },
+    "container_resources": {
+        "requests": {
+            "cpu": 100,
+            "memory": 128
+        },
+        "limits": {
+            "cpu": 500,
+            "memory": 512
+        }
+    },
+    "tags": [
+        "HTTP",
+        "Batch",
+        "Image"
+    ],
+    "style": {
+        "node_label": "Batch HTTP Request",
+        "icon_class_name": "fa-solid:cloud-arrow-down"
+    }
+}

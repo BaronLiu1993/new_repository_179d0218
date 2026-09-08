@@ -1,0 +1,16 @@
+{
+    "group0": {
+        "dependency": {
+            "dockerfile": "Dockerfile_1",
+            "requirements_file": null
+        },
+        "pieces": [
+            "BatchImageFilterPiece",
+            "ExampleSleepPiece",
+            "ExampleSineWavePiece",
+            "BatchHttpRequestPiece"
+        ],
+        "secrets": [],
+        "source_image": "ghcr.io/enter-your-github-registry-name-here/new_repository_179d0218:0.1.0-group0"
+    }
+}

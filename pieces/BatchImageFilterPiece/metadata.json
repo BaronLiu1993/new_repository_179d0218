@@ -1,0 +1,25 @@
+{
+    "name": "BatchImageFilterPiece",
+    "description": "Apply image filters to multiple base64 encoded images or image file paths.",
+    "dependency": {
+        "dockerfile": "Dockerfile_1"
+    },
+    "container_resources": {
+        "requests": {
+            "cpu": 100,
+            "memory": 128
+        },
+        "limits": {
+            "cpu": 500,
+            "memory": 512
+        }
+    },
+    "tags": [
+        "Image",
+        "Batch"
+    ],
+    "style": {
+        "node_label": "Batch Image Filter",
+        "icon_class_name": "fa-solid:image"
+    }
+}
