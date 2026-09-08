@@ -61,6 +61,9 @@ class OutputModel(BaseModel):
     base64_bytes_data_list: List[Optional[str]] = Field(
         description="Base64 encoded response bodies. Length always matches the number of input requests.",
     )
+    response_file_paths: List[Optional[str]] = Field(
+        description="Paths to response body files. Length always matches the number of input requests.",
+    )
     requested_count: int = Field(
         description="Number of requests provided.",
     )

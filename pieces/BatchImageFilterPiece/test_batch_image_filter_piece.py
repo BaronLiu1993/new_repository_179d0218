@@ -82,3 +82,31 @@ def test_processes_multiple_valid_images(tmp_path):
     assert "Filtered image 0" in display_html
     assert "Filtered image 1" in display_html
     assert "Filtered image 2" in display_html
+
+
+def test_dedupes_duplicate_images(tmp_path):
+    encoded_images = []
+    for color in [(100, 150, 200), (200, 150, 100)]:
+        image = Image.new("RGB", (4, 4), color=color)
+        buffer = BytesIO()
+        image.save(buffer, format="PNG")
+        encoded_images.append(base64.b64encode(buffer.getvalue()).decode("utf-8"))
+
+    piece = BatchImageFilterPiece(DeployModeType.dry_run, "test_task", "test_dag")
+    piece.results_path = str(tmp_path)
+
+    output = piece.piece_function(
+        InputModel(
+            input_images=[encoded_images[0], encoded_images[1], encoded_images[0]],
+            sepia=True,
+            output_type="both",
+            max_concurrency=8,
+        )
+    )
+
+    assert output.input_count == 3
+    assert output.successful_count == 3
+    assert output.failed_count == 0
+    assert output.image_base64_strings[0] == output.image_base64_strings[2]
+    assert output.image_file_paths[0] == output.image_file_paths[2]
+    assert len(set(output.image_file_paths)) == 2

@@ -203,7 +203,7 @@
             "type": "object"
         },
         "secrets_schema": null,
-        "source_url": "https://github.com/BaronLiu1993/new_repository_179d0218/tree/main/pieces/BatchImageFilterPiece"
+        "source_url": null
     },
     "BatchHttpRequestPiece": {
         "name": "BatchHttpRequestPiece",
@@ -350,6 +350,21 @@
                     "title": "Base64 Bytes Data List",
                     "type": "array"
                 },
+                "response_file_paths": {
+                    "description": "Paths to response body files. Length always matches the number of input requests.",
+                    "items": {
+                        "anyOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ]
+                    },
+                    "title": "Response File Paths",
+                    "type": "array"
+                },
                 "requested_count": {
                     "description": "Number of requests provided.",
                     "title": "Requested Count",
@@ -368,6 +383,7 @@
             },
             "required": [
                 "base64_bytes_data_list",
+                "response_file_paths",
                 "requested_count",
                 "successful_count",
                 "failed_count"
@@ -376,6 +392,6 @@
             "type": "object"
         },
         "secrets_schema": null,
-        "source_url": "https://github.com/BaronLiu1993/new_repository_179d0218/tree/main/pieces/BatchHttpRequestPiece"
+        "source_url": null
     }
 }

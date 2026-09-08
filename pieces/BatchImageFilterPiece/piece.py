@@ -17,13 +17,22 @@ class BatchImageFilterPiece(BasePiece):
             raise ValueError("At least one input image must be provided.")
 
         input_count = len(input_data.input_images)
-        max_workers = min(input_data.max_concurrency, input_count)
+        image_key_to_indices = {}
+        for index, image_input in enumerate(input_data.input_images):
+            image_key = self._image_key(image_input)
+            image_key_to_indices.setdefault(image_key, []).append(index)
+        unique_images = [
+            (indices[0], input_data.input_images[indices[0]], indices)
+            for indices in image_key_to_indices.values()
+        ]
+        max_workers = min(input_data.max_concurrency, len(unique_images))
         self._debug(f"Filtering {input_count} images with up to {max_workers} concurrent workers.")
         self._debug(f"input_images type: {type(input_data.input_images).__name__}")
         for index, image_input in enumerate(input_data.input_images):
             self._debug(
                 f"Image {index} input summary: {self._summarize_image_input(image_input)}"
             )
+        self._debug(f"Deduped {input_count} images down to {len(unique_images)} unique images.")
 
         image_base64_strings = [None] * input_count
         image_file_paths = [None] * input_count
@@ -31,11 +40,16 @@ class BatchImageFilterPiece(BasePiece):
         with ThreadPoolExecutor(max_workers=max_workers) as executor:
             future_to_index = {
                 executor.submit(self._process_image, index, image_input, input_data): index
-                for index, image_input in enumerate(input_data.input_images)
+                for index, image_input, indices in unique_images
+            }
+            future_to_indices = {
+                future: indices
+                for future, (_, _, indices) in zip(future_to_index.keys(), unique_images)
             }
 
             for future in as_completed(future_to_index):
                 index = future_to_index[future]
+                duplicate_indices = future_to_indices[future]
                 try:
                     result_index, base64_string, file_path, error = future.result()
                 except Exception as exc:
@@ -44,12 +58,16 @@ class BatchImageFilterPiece(BasePiece):
                     file_path = None
                     error = str(exc)
 
-                image_base64_strings[result_index] = base64_string
-                image_file_paths[result_index] = file_path
+                for duplicate_index in duplicate_indices:
+                    image_base64_strings[duplicate_index] = base64_string
+                    image_file_paths[duplicate_index] = file_path
                 if error:
                     self._debug(f"Image {result_index} failed at stage '{error}'.", error=True)
                 else:
-                    self._debug(f"Image {result_index} filtered successfully.")
+                    self._debug(
+                        f"Image {result_index} filtered successfully; "
+                        f"reused for {len(duplicate_indices)} output slots."
+                    )
 
         if len(image_base64_strings) != input_count or len(image_file_paths) != input_count:
             raise RuntimeError(f"Expected {input_count} outputs for each output list.")
@@ -118,6 +136,9 @@ class BatchImageFilterPiece(BasePiece):
             self.logger.error(full_message)
         else:
             self.logger.info(full_message)
+
+    def _image_key(self, image_input: Optional[str]) -> str:
+        return "" if image_input is None else image_input
 
     def _load_image(self, image_input: str) -> Image.Image:
         base64_value = image_input
