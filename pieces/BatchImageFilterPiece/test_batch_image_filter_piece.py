@@ -46,3 +46,6 @@ def test_preserves_one_output_slot_per_input(tmp_path):
     assert output.image_file_paths[0] is not None
     assert output.image_base64_strings[1] is None
     assert output.image_file_paths[1] is None
+    assert piece.display_result["file_type"] == "html"
+    assert Path(piece.display_result["file_path"]).exists()
+    assert "Filtered image 0" in Path(piece.display_result["file_path"]).read_text()

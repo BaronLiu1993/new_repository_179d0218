@@ -1,6 +1,7 @@
 import base64
 import json
 from concurrent.futures import ThreadPoolExecutor, as_completed
+from pathlib import Path
 from typing import Optional, Tuple
 
 import requests
@@ -58,6 +59,7 @@ class BatchHttpRequestPiece(BasePiece):
         self.logger.info(
             f"Completed {request_count} requests: {successful_count} succeeded, {failed_count} failed."
         )
+        self._set_display_result(request_count, successful_count, failed_count)
 
         return OutputModel(
             base64_bytes_data_list=base64_bytes_data_list,
@@ -98,3 +100,21 @@ class BatchHttpRequestPiece(BasePiece):
 
         encoded_body = base64.b64encode(response.content).decode("utf-8")
         return index, encoded_body, response.status_code, None
+
+    def _set_display_result(self, request_count: int, successful_count: int, failed_count: int):
+        summary_path = str(Path(self.results_path) / "batch_http_request_summary.json")
+        with open(summary_path, "w") as summary_file:
+            json.dump(
+                {
+                    "requested_count": request_count,
+                    "successful_count": successful_count,
+                    "failed_count": failed_count,
+                },
+                summary_file,
+                indent=2,
+            )
+
+        self.display_result = {
+            "file_type": "json",
+            "file_path": summary_path,
+        }

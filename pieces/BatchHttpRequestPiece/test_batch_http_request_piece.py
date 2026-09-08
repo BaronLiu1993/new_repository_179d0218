@@ -57,3 +57,5 @@ def test_preserves_one_output_slot_per_request(tmp_path):
     assert len(output.base64_bytes_data_list) == 2
     assert output.base64_bytes_data_list[0] is not None
     assert output.base64_bytes_data_list[1] is None
+    assert piece.display_result["file_type"] == "json"
+    assert Path(piece.display_result["file_path"]).exists()

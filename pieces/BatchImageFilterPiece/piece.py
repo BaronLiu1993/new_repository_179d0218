@@ -42,7 +42,7 @@ class BatchImageFilterPiece(BasePiece):
                 image_base64_strings[result_index] = base64_string
                 image_file_paths[result_index] = file_path
                 if error:
-                    self.logger.error(f"Image {result_index} failed: {error}")
+                    self.logger.error(f"Image {result_index} failed.")
                 else:
                     self.logger.info(f"Image {result_index} filtered successfully.")
 
@@ -58,7 +58,7 @@ class BatchImageFilterPiece(BasePiece):
             f"Completed {input_count} images: {successful_count} succeeded, {failed_count} failed."
         )
 
-        self._set_display_result(image_file_paths)
+        self._set_display_result(image_base64_strings)
 
         return OutputModel(
             image_base64_strings=image_base64_strings,
@@ -100,15 +100,19 @@ class BatchImageFilterPiece(BasePiece):
         return index, image_base64_string, image_file_path, None
 
     def _load_image(self, image_input: str) -> Image.Image:
-        input_path = Path(image_input)
-        if input_path.exists() and input_path.is_file():
-            return Image.open(input_path).convert("RGB")
-
         base64_value = image_input
         if "," in base64_value and base64_value.lower().startswith("data:"):
             base64_value = base64_value.split(",", 1)[1]
 
-        image_bytes = base64.b64decode(base64_value)
+        if len(image_input) < 1024:
+            input_path = Path(image_input)
+            try:
+                if input_path.exists() and input_path.is_file():
+                    return Image.open(input_path).convert("RGB")
+            except OSError:
+                pass
+
+        image_bytes = base64.b64decode(base64_value, validate=True)
         return Image.open(BytesIO(image_bytes)).convert("RGB")
 
     def _apply_filters(self, image: Image.Image, input_data: InputModel) -> Image.Image:
@@ -158,12 +162,64 @@ class BatchImageFilterPiece(BasePiece):
         blue_channel = blue_channel.point(lambda value: min(255, int(value * blue)))
         return Image.merge("RGB", (red_channel, green_channel, blue_channel))
 
-    def _set_display_result(self, image_file_paths):
-        first_file_path = next((path for path in image_file_paths if path is not None), None)
-        if first_file_path is None:
+    def _set_display_result(self, image_base64_strings):
+        valid_images = [
+            (index, image_base64_string)
+            for index, image_base64_string in enumerate(image_base64_strings)
+            if image_base64_string is not None
+        ]
+        if not valid_images:
             return
 
+        image_markup = "\n".join(
+            f'<figure><img src="data:image/png;base64,{image_base64_string}" alt="Filtered image {index}" />'
+            f"<figcaption>Image {index}</figcaption></figure>"
+            for index, image_base64_string in valid_images
+        )
+        html_path = str(Path(self.results_path) / "batch_image_filter_results.html")
+        with open(html_path, "w") as html_file:
+            html_file.write(
+                f"""<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <style>
+    body {{
+      font-family: sans-serif;
+      margin: 0;
+      padding: 16px;
+    }}
+    .grid {{
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 16px;
+    }}
+    figure {{
+      margin: 0;
+    }}
+    img {{
+      display: block;
+      width: 100%;
+      height: auto;
+      border: 1px solid #ddd;
+    }}
+    figcaption {{
+      margin-top: 6px;
+      color: #555;
+      font-size: 13px;
+    }}
+  </style>
+</head>
+<body>
+  <div class="grid">
+    {image_markup}
+  </div>
+</body>
+</html>
+"""
+            )
+
         self.display_result = {
-            "file_type": "png",
-            "file_path": first_file_path,
+            "file_type": "html",
+            "file_path": html_path,
         }

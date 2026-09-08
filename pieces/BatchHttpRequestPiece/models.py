@@ -7,9 +7,6 @@ from pydantic import BaseModel, Field, conint
 class MethodEnum(str, Enum):
     GET = "GET"
     POST = "POST"
-    PUT = "PUT"
-    PATCH = "PATCH"
-    DELETE = "DELETE"
 
 
 class RequestConfig(BaseModel):

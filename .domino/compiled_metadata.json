@@ -244,10 +244,7 @@
                 "MethodEnum": {
                     "enum": [
                         "GET",
-                        "POST",
-                        "PUT",
-                        "PATCH",
-                        "DELETE"
+                        "POST"
                     ],
                     "title": "MethodEnum",
                     "type": "string"
