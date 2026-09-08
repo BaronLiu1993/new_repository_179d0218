@@ -1,8 +1,12 @@
+import sys
+from pathlib import Path
 from unittest.mock import Mock, patch
 
 import pytest
 from domino.schemas.deploy_mode import DeployModeType
 from pydantic import ValidationError
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
 from pieces.BatchHttpRequestPiece.models import InputModel
 from pieces.BatchHttpRequestPiece.piece import BatchHttpRequestPiece

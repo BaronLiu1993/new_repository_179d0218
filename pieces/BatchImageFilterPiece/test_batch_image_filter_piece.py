@@ -1,10 +1,14 @@
 import base64
+import sys
 from io import BytesIO
+from pathlib import Path
 
 import pytest
 from domino.schemas.deploy_mode import DeployModeType
 from PIL import Image
 from pydantic import ValidationError
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
 from pieces.BatchImageFilterPiece.models import InputModel
 from pieces.BatchImageFilterPiece.piece import BatchImageFilterPiece
