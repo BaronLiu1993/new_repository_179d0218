@@ -5,9 +5,10 @@
             "requirements_file": null
         },
         "pieces": [
-            "BatchImageFilterPiece",
-            "BatchHttpGetRequestPiece"
+            "BatchHttpGetRequestPiece",
+            "BatchImageFilterPiece"
         ],
-        "secrets": []
+        "secrets": [],
+        "source_image": "ghcr.io/baronliu1993/new_repository_179d0218:0.1.6-group0"
     }
 }

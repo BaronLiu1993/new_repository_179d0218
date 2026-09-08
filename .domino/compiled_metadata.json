@@ -1,4 +1,161 @@
 {
+    "BatchHttpGetRequestPiece": {
+        "name": "BatchHttpGetRequestPiece",
+        "dependency": {
+            "dockerfile": "Dockerfile_1",
+            "requirements_file": null
+        },
+        "tags": [
+            "HTTP",
+            "Batch",
+            "Image"
+        ],
+        "style": {
+            "node_label": "Batch HTTP GET Request",
+            "node_type": "default",
+            "node_style": {
+                "backgroundColor": "#ebebeb"
+            },
+            "useIcon": true,
+            "icon_class_name": "fa-solid:cloud-arrow-down",
+            "iconStyle": {
+                "cursor": "pointer"
+            }
+        },
+        "description": "Fetch multiple URLs with HTTP GET concurrently and return response files plus base64 encoded response bodies.",
+        "container_resources": {
+            "requests": {
+                "cpu": 100,
+                "memory": 128
+            },
+            "limits": {
+                "cpu": 500,
+                "memory": 512
+            }
+        },
+        "input_schema": {
+            "$defs": {
+                "RequestConfig": {
+                    "properties": {
+                        "url": {
+                            "description": "URL to request.",
+                            "from_upstream": "never",
+                            "title": "Url",
+                            "type": "string"
+                        },
+                        "bearer_token": {
+                            "anyOf": [
+                                {
+                                    "type": "string"
+                                },
+                                {
+                                    "type": "null"
+                                }
+                            ],
+                            "default": null,
+                            "description": "Optional bearer token for this request.",
+                            "from_upstream": "never",
+                            "title": "Bearer Token"
+                        }
+                    },
+                    "required": [
+                        "url"
+                    ],
+                    "title": "RequestConfig",
+                    "type": "object"
+                }
+            },
+            "description": "Batch HTTP GET Request Piece Input Model",
+            "properties": {
+                "requests": {
+                    "default": [],
+                    "description": "GET requests to execute.",
+                    "from_upstream": "never",
+                    "items": {
+                        "$ref": "#/$defs/RequestConfig"
+                    },
+                    "title": "Requests",
+                    "type": "array"
+                },
+                "timeout_seconds": {
+                    "default": 10,
+                    "description": "Request timeout in seconds.",
+                    "title": "Timeout Seconds",
+                    "type": "integer"
+                },
+                "max_concurrency": {
+                    "default": 8,
+                    "description": "Maximum number of concurrent requests.",
+                    "minimum": 1,
+                    "title": "Max Concurrency",
+                    "type": "integer"
+                }
+            },
+            "title": "InputModel",
+            "type": "object"
+        },
+        "output_schema": {
+            "description": "Batch HTTP GET Request Piece Output Model",
+            "properties": {
+                "base64_bytes_data_list": {
+                    "description": "Base64 encoded response bodies. Length always matches the number of input requests.",
+                    "items": {
+                        "anyOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ]
+                    },
+                    "title": "Base64 Bytes Data List",
+                    "type": "array"
+                },
+                "response_file_paths": {
+                    "description": "Paths to response body files. Length always matches the number of input requests.",
+                    "items": {
+                        "anyOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ]
+                    },
+                    "title": "Response File Paths",
+                    "type": "array"
+                },
+                "requested_count": {
+                    "description": "Number of requests provided.",
+                    "title": "Requested Count",
+                    "type": "integer"
+                },
+                "successful_count": {
+                    "description": "Number of successful requests.",
+                    "title": "Successful Count",
+                    "type": "integer"
+                },
+                "failed_count": {
+                    "description": "Number of failed requests.",
+                    "title": "Failed Count",
+                    "type": "integer"
+                }
+            },
+            "required": [
+                "base64_bytes_data_list",
+                "response_file_paths",
+                "requested_count",
+                "successful_count",
+                "failed_count"
+            ],
+            "title": "OutputModel",
+            "type": "object"
+        },
+        "secrets_schema": null,
+        "source_url": "https://github.com/BaronLiu1993/new_repository_179d0218/tree/main/pieces/BatchHttpGetRequestPiece"
+    },
     "BatchImageFilterPiece": {
         "name": "BatchImageFilterPiece",
         "dependency": {
@@ -203,163 +360,6 @@
             "type": "object"
         },
         "secrets_schema": null,
-        "source_url": null
-    },
-    "BatchHttpGetRequestPiece": {
-        "name": "BatchHttpGetRequestPiece",
-        "dependency": {
-            "dockerfile": "Dockerfile_1",
-            "requirements_file": null
-        },
-        "tags": [
-            "HTTP",
-            "Batch",
-            "Image"
-        ],
-        "style": {
-            "node_label": "Batch HTTP GET Request",
-            "node_type": "default",
-            "node_style": {
-                "backgroundColor": "#ebebeb"
-            },
-            "useIcon": true,
-            "icon_class_name": "fa-solid:cloud-arrow-down",
-            "iconStyle": {
-                "cursor": "pointer"
-            }
-        },
-        "description": "Fetch multiple URLs with HTTP GET concurrently and return response files plus base64 encoded response bodies.",
-        "container_resources": {
-            "requests": {
-                "cpu": 100,
-                "memory": 128
-            },
-            "limits": {
-                "cpu": 500,
-                "memory": 512
-            }
-        },
-        "input_schema": {
-            "$defs": {
-                "RequestConfig": {
-                    "properties": {
-                        "url": {
-                            "description": "URL to request.",
-                            "from_upstream": "never",
-                            "title": "Url",
-                            "type": "string"
-                        },
-                        "bearer_token": {
-                            "anyOf": [
-                                {
-                                    "type": "string"
-                                },
-                                {
-                                    "type": "null"
-                                }
-                            ],
-                            "default": null,
-                            "description": "Optional bearer token for this request.",
-                            "from_upstream": "never",
-                            "title": "Bearer Token"
-                        }
-                    },
-                    "required": [
-                        "url"
-                    ],
-                    "title": "RequestConfig",
-                    "type": "object"
-                }
-            },
-            "description": "Batch HTTP GET Request Piece Input Model",
-            "properties": {
-                "requests": {
-                    "default": [],
-                    "description": "GET requests to execute.",
-                    "from_upstream": "never",
-                    "items": {
-                        "$ref": "#/$defs/RequestConfig"
-                    },
-                    "title": "Requests",
-                    "type": "array"
-                },
-                "timeout_seconds": {
-                    "default": 10,
-                    "description": "Request timeout in seconds.",
-                    "title": "Timeout Seconds",
-                    "type": "integer"
-                },
-                "max_concurrency": {
-                    "default": 8,
-                    "description": "Maximum number of concurrent requests.",
-                    "minimum": 1,
-                    "title": "Max Concurrency",
-                    "type": "integer"
-                }
-            },
-            "title": "InputModel",
-            "type": "object"
-        },
-        "output_schema": {
-            "description": "Batch HTTP GET Request Piece Output Model",
-            "properties": {
-                "base64_bytes_data_list": {
-                    "description": "Base64 encoded response bodies. Length always matches the number of input requests.",
-                    "items": {
-                        "anyOf": [
-                            {
-                                "type": "string"
-                            },
-                            {
-                                "type": "null"
-                            }
-                        ]
-                    },
-                    "title": "Base64 Bytes Data List",
-                    "type": "array"
-                },
-                "response_file_paths": {
-                    "description": "Paths to response body files. Length always matches the number of input requests.",
-                    "items": {
-                        "anyOf": [
-                            {
-                                "type": "string"
-                            },
-                            {
-                                "type": "null"
-                            }
-                        ]
-                    },
-                    "title": "Response File Paths",
-                    "type": "array"
-                },
-                "requested_count": {
-                    "description": "Number of requests provided.",
-                    "title": "Requested Count",
-                    "type": "integer"
-                },
-                "successful_count": {
-                    "description": "Number of successful requests.",
-                    "title": "Successful Count",
-                    "type": "integer"
-                },
-                "failed_count": {
-                    "description": "Number of failed requests.",
-                    "title": "Failed Count",
-                    "type": "integer"
-                }
-            },
-            "required": [
-                "base64_bytes_data_list",
-                "response_file_paths",
-                "requested_count",
-                "successful_count",
-                "failed_count"
-            ],
-            "title": "OutputModel",
-            "type": "object"
-        },
-        "secrets_schema": null,
-        "source_url": null
+        "source_url": "https://github.com/BaronLiu1993/new_repository_179d0218/tree/main/pieces/BatchImageFilterPiece"
     }
 }
